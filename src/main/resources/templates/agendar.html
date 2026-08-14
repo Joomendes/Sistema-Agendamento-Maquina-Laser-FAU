@@ -1,0 +1,628 @@
+<!doctype html>
+<html lang="pt-BR" xmlns:th="http://www.thymeleaf.org">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>Agendar horário • FAU</title>
+  <meta name="_csrf" th:content="${_csrf.token}" />
+  <meta name="_csrf_header" th:content="${_csrf.headerName}" />
+  <link rel="stylesheet" href="/css/portal-shell.css" />
+  <style>
+    :root{
+      --red:#9b0b2aff;
+      --red-dark:#7f0822;
+      --text:#1f2937;
+      --muted:#6b7280;
+      --line:rgba(15,23,42,.12);
+      --card:#ffffff;
+      --soft:#f9fafb;
+      --shadow:0 12px 32px rgba(15,23,42,.10);
+      --rail-w:76px;
+    }
+    *{box-sizing:border-box}
+    html,body{height:100%}
+    body{
+      margin:0;
+      font:16px/1.45 "Segoe UI", Arial, sans-serif;
+      color:var(--text);
+      background:#ffffff;
+    }
+    .shell{
+      min-height:100vh;
+      display:grid;
+      grid-template-rows:auto auto 1fr;
+    }
+    .topbar{
+      height:58px;
+      background:rgba(255,255,255,.96);
+      border-bottom:1px solid rgba(15,23,42,.10);
+      display:grid;
+      grid-template-columns:1fr 1fr auto;
+      align-items:center;
+      gap:16px;
+      padding:0 18px 0 20px;
+    }
+    .campus{
+      color:#2b6f9a;
+      font-weight:800;
+      text-transform:uppercase;
+      font-size:13px;
+    }
+    .course{
+      text-align:center;
+      font-size:20px;
+      font-weight:800;
+      color:#111827;
+    }
+    .user-chip{
+      display:flex;
+      align-items:center;
+      gap:10px;
+      font-weight:700;
+      color:#111827;
+      white-space:nowrap;
+    }
+    .user-icon{
+      width:34px;height:34px;border-radius:999px;overflow:hidden;
+      border:1px solid rgba(15,23,42,.15);background:#fff;display:grid;place-items:center;
+      box-shadow:0 6px 16px rgba(15,23,42,.10);flex:0 0 auto;
+    }
+    .user-icon img{width:22px;height:22px;object-fit:contain;display:block;}
+    .subbar{
+      height:56px;
+      background-image:url('/images/barratopointermediaria.png');
+      background-position:center;
+      background-repeat:no-repeat;
+      background-size:100% 100%;
+      color:#fff;
+      display:flex;
+      align-items:center;
+      justify-content:space-between;
+      padding:0 18px 0 16px;
+      border-bottom:1px solid rgba(255,255,255,.16);
+    }
+    .content{
+      min-height:calc(100vh - 114px);
+      display:grid;
+      grid-template-columns:var(--rail-w) minmax(0,1fr);
+    }
+    .rail{
+      background-image:url('/images/barralateralesquerda.png');
+      background-position:center top;
+      background-repeat:no-repeat;
+      background-size:100% 100%;
+      border-right:1px solid rgba(255,255,255,.15);
+      display:flex;
+      flex-direction:column;
+      padding:8px 0 14px;
+    }
+    .rail-slot{
+      width:100%;
+      min-height:48px;
+      border-top:1px solid rgba(255,255,255,.15);
+      display:grid;
+      place-items:center;
+      color:#fff;
+      text-decoration:none;
+      transition:background .15s ease, transform .15s ease;
+    }
+    .rail-slot:hover{background:rgba(255,255,255,.10);transform:translateY(-1px);}
+    .rail-slot img{
+      width:22px;height:22px;object-fit:contain;display:block;filter:brightness(0) invert(1);
+    }
+    .rail-slot.brand{
+      min-height:50px;border-top:none;margin-bottom:2px;background:rgba(255,255,255,.06);
+    }
+    .rail-slot.empty{
+      cursor:default;
+    }
+    .rail-slot.empty:hover{
+      background:transparent;
+      transform:none;
+    }
+    .workspace{
+      padding:22px;
+      overflow:auto;
+    }
+    .workspace-card{
+      background:rgba(255,255,255,.96);
+      border:1px solid rgba(255,255,255,.75);
+      border-radius:24px;
+      box-shadow:var(--shadow);
+      padding:18px;
+    }
+    .hero{
+      margin-bottom:16px;
+      padding:4px 4px 18px;
+      border-bottom:1px solid var(--line);
+    }
+    .hero h1{margin:0;font-size:24px;line-height:1.08;letter-spacing:-.02em;}
+    .hero p{margin:8px 0 0;color:var(--muted);}
+    .grid{
+      display:grid;
+      grid-template-columns:1.25fr .82fr;
+      gap:18px;
+      align-items:start;
+    }
+    @media (max-width:980px){ .grid{grid-template-columns:1fr;} }
+    .stack{display:grid;gap:18px;}
+    .card{
+      background:var(--card);
+      border:1px solid var(--line);
+      border-radius:18px;
+      box-shadow:var(--shadow);
+      padding:22px;
+    }
+    h2{margin:0 0 8px 0;font-size:18px;}
+    .muted{color:var(--muted);margin:0 0 14px 0;}
+    .form-grid{display:grid;grid-template-columns:1fr 1fr;gap:12px;margin-bottom:12px;}
+    @media (max-width:720px){ .form-grid{grid-template-columns:1fr;} }
+    label{
+      display:block;font-size:12px;font-weight:700;color:#4b5563;
+      margin:0 0 6px 0;letter-spacing:.02em;text-transform:uppercase;
+    }
+    input,select{
+      width:100%;padding:12px 14px;border:1px solid var(--line);border-radius:12px;
+      background:#fff;color:var(--text);font-size:15px;outline:none;
+      transition:border-color .15s, box-shadow .15s;
+    }
+    input:focus,select:focus{border-color:var(--red);box-shadow:0 0 0 3px rgba(155,11,42,.16);}
+    .slot-section{margin-top:14px;}
+    .slot-head{display:flex;align-items:baseline;justify-content:space-between;gap:10px;margin-bottom:10px;}
+    .slot-head small{color:var(--muted);}
+    .slot-grid{
+      width:100%;overflow:hidden;border:1px solid var(--line);border-radius:16px;background:#fff;
+    }
+    .slot-board{width:100%;border-collapse:collapse;}
+    .slot-board th,.slot-board td{padding:12px 10px;border-bottom:1px solid var(--line);text-align:center;font-size:14px;}
+    .slot-board th{background:#f8fafc;color:#374151;font-size:12px;text-transform:uppercase;letter-spacing:.03em;}
+    .slot-board tr:last-child td{border-bottom:none;}
+    .slot-time{font-weight:800;text-align:left !important;width:150px;white-space:nowrap;}
+    .slot-state{font-weight:800;border-radius:999px;display:inline-flex;align-items:center;justify-content:center;min-width:96px;padding:8px 10px;}
+    .slot-state.free{background:#dcfce7;color:#166534;}
+    .slot-state.busy{background:#fee2e2;color:#991b1b;}
+    .slot-btn{
+      border:none;border-radius:999px;padding:10px 14px;background:var(--red);color:#fff;
+      font-weight:800;cursor:pointer;
+    }
+    .slot-btn:hover{background:#f10d18;}
+    .slot-btn:disabled{opacity:.55;cursor:not-allowed;}
+    .slot-row.selected{outline:2px solid rgba(155,11,42,.18);outline-offset:-2px;background:#fff7f8;}
+    .selected-box{margin-top:12px;padding:12px 14px;border:1px solid var(--line);border-radius:12px;background:#fafafa;color:#374151;font-size:14px;}
+    .btn{
+      margin-top:16px;width:100%;background:var(--red);color:#fff;border:1px solid var(--red);
+      border-radius:12px;padding:12px 14px;font-weight:800;letter-spacing:.01em;cursor:pointer;
+      box-shadow:0 12px 24px rgba(155,11,42,.22);
+      transition:transform .15s ease, box-shadow .15s ease, background .15s ease, filter .15s ease;
+    }
+    .btn:hover{background:#f10d18;transform:translateY(-1px);box-shadow:0 16px 28px rgba(155,11,42,.26);}
+    .btn:disabled{opacity:.65;cursor:not-allowed;box-shadow:none;}
+    .msg{margin-top:12px;font-size:14px;padding:12px 14px;border-radius:12px;border:1px solid;background:#fff;}
+    .msg.ok{color:#065f46;border-color:#bbf7d0;background:#ecfdf5;}
+    .msg.err{color:#991b1b;border-color:#fecaca;background:#fee2e2;}
+    .msg.info{color:#1f2937;border-color:#e5e7eb;background:#f9fafb;}
+    .summary-list{display:grid;gap:10px;}
+    .summary-item{
+      border:1px solid var(--line);border-radius:14px;padding:12px 14px;background:#fff;
+      display:flex;justify-content:space-between;gap:10px;align-items:center;
+    }
+    .summary-item small{color:var(--muted);display:block;margin-top:2px;}
+    .badge{font-size:12px;font-weight:800;padding:6px 10px;border-radius:999px;border:1px solid var(--line);background:#f9fafb;white-space:nowrap;}
+    .badge.ok{color:#16a34a;background:#ecfdf5;border-color:#bbf7d0;}
+    .badge.busy{color:#991b1b;background:#fee2e2;border-color:#fecaca;}
+    .empty{padding:12px 14px;border:1px dashed var(--line);border-radius:12px;color:var(--muted);background:#fff;}
+    .table{width:100%;border-collapse:collapse;font-size:14px;margin-top:4px;}
+    .table th,.table td{padding:10px 8px;border-bottom:1px solid var(--line);text-align:left;}
+    .table th{font-size:12px;text-transform:uppercase;letter-spacing:.02em;color:#4b5563;background:#f8fafc;}
+    .status{font-weight:800;color:#065f46;}
+    @media (max-width: 920px){
+      .topbar{grid-template-columns:1fr;height:auto;padding:12px 16px;text-align:center;}
+      .course{font-size:18px;}
+      .user-chip{justify-content:center;}
+      .content{grid-template-columns:56px minmax(0,1fr);}
+      .rail{width:56px;}
+      .workspace{padding:14px;}
+      .workspace-card{padding:14px;}
+    }
+  </style>
+</head>
+<body>
+  <div class="shell">
+    <header class="topbar">
+      <div class="campus">HIGIENÓPOLIS</div>
+      <div class="course">ARQUITETURA E URBANISMO</div>
+      <div class="user-chip">
+        <span th:text="|${alunoNome} (RA: ${alunoId})|">NOME DO ALUNO (RA: 10400000)</span>
+        <div class="user-icon"><img src="/images/usuario.png" alt="Usuario" /></div>
+      </div>
+    </header>
+
+    <div class="subbar" aria-hidden="true"></div>
+
+    <main class="content">
+      <aside class="rail" aria-label="Barra lateral decorativa">
+        <div class="rail-slot empty" aria-hidden="true"></div>
+        <a class="rail-slot" href="/app" aria-label="Laser">
+          <img src="/images/cortadoraicone.pngo.png" alt="" aria-hidden="true" />
+        </a>
+        <div class="rail-slot" aria-hidden="true"></div>
+        <div class="rail-slot" aria-hidden="true"></div>
+        <div class="rail-slot" aria-hidden="true"></div>
+        <div class="rail-slot" aria-hidden="true"></div>
+        <div class="rail-slot" aria-hidden="true"></div>
+        <div class="rail-slot" aria-hidden="true"></div>
+        <div class="rail-slot" aria-hidden="true"></div>
+        <a class="laser-shortcut" href="/app" aria-label="Abrir painel da cortadora a laser">
+          <img src="/images/cortadoraicone.pngo.png" alt="" aria-hidden="true" />
+        </a>
+      </aside>
+
+      <section class="workspace">
+        <div class="workspace-card">
+          <div class="hero">
+            <h1>Agendar horário</h1>
+          </div>
+
+          <div class="grid">
+            <section class="card">
+              <div class="rules" style="margin-top:0; margin-bottom:16px; padding:14px 16px; border:1px solid var(--line); border-radius:14px; background:linear-gradient(180deg, #fff, #fcfcfd);">
+                <strong>Regras</strong>
+                <ul style="margin:10px 0 0 18px; padding:0;">
+                  <li>Horário de funcionamento: das 10h às 17h</li>
+                  <li>9º e 10º semestres: de segundas às sextas-feiras</li>
+                  <li>4º ao 8º semestres: apenas às quintas e sextas-feiras</li>
+                  <li>Cancelamento permitido até 1h antes do início</li>
+                  <li>Um suplente pode ser incluído até o término da reserva</li>
+                </ul>
+              </div>
+
+              <form id="form-agendar">
+                <div class="form-grid">
+                  <div>
+                    <label for="data">Data</label>
+                    <input id="data" name="data" type="date" required />
+                  </div>
+                  <div>
+                    <label for="equipamento">Equipamento</label>
+                    <select id="equipamento" name="equipamento" required>
+                      <option value="Cortadora a Laser 1">Cortadora a Laser 1</option>
+                      <option value="Cortadora a Laser 2">Cortadora a Laser 2</option>
+                      <option value="Cortadora a Laser 3">Cortadora a Laser 3</option>
+                      <option value="Cortadora a Laser 4">Cortadora a Laser 4</option>
+                    </select>
+                  </div>
+                </div>
+
+                <div class="slot-section">
+                  <div class="slot-head">
+                    <h2>Horários disponíveis</h2>
+                  </div>
+                  <div id="slot-grid" class="slot-grid"></div>
+                  <div id="slot-selected" class="selected-box">Nenhum horário selecionado.</div>
+                </div>
+
+                <button id="btn" class="btn" type="submit">Confirmar agendamento</button>
+                <div id="msg" class="msg info" style="display:none;"></div>
+              </form>
+            </section>
+
+            <div class="stack">
+              <aside class="card">
+                <h2>Disponibilidade do dia</h2>
+                <div id="availability" class="summary-list"></div>
+              </aside>
+
+              <aside class="card">
+                <h2>Suas reservas</h2>
+                <div id="preview"><div class="empty">Carregando...</div></div>
+              </aside>
+            </div>
+          </div>
+
+          <form data-logout action="/logout" method="post" style="display:none">
+            <input th:if="${_csrf != null}" type="hidden" th:name="${_csrf.parameterName}" th:value="${_csrf.token}" />
+          </form>
+        </div>
+      </section>
+    </main>
+  </div>
+
+  <script src="/js/csrf.js"></script>
+  <script th:inline="javascript">
+    /*<![CDATA[*/
+    const ALUNO_ID = /*[[${alunoId}]]*/ 0;
+    /*]]>*/
+  </script>
+
+  <script th:inline="none">
+    const form = document.getElementById('form-agendar');
+    const btn = document.getElementById('btn');
+    const msg = document.getElementById('msg');
+    const preview = document.getElementById('preview');
+    const availability = document.getElementById('availability');
+    const slotGrid = document.getElementById('slot-grid');
+    const slotSelected = document.getElementById('slot-selected');
+    const dataInput = document.getElementById('data');
+    const equipamentoInput = document.getElementById('equipamento');
+
+    const SLOT_HOURS = Array.from({ length: 8 }, (_, i) => 10 + i);
+    let selectedHour = null;
+    let currentSlots = [];
+
+    function todayLocalDate(){
+      const d = new Date();
+      const year = d.getFullYear();
+      const month = String(d.getMonth() + 1).padStart(2, '0');
+      const day = String(d.getDate()).padStart(2, '0');
+      return `${year}-${month}-${day}`;
+    }
+
+    function show(el, text, kind = 'info'){
+      el.className = 'msg ' + kind;
+      el.textContent = text;
+      el.style.display = 'block';
+    }
+
+    function showToast(text, kind = 'ok', title = ''){
+      const stack = document.getElementById('toast-stack') || (() => {
+        const node = document.createElement('div');
+        node.id = 'toast-stack';
+        node.style.cssText = 'position:fixed;top:18px;right:18px;z-index:9999;display:flex;flex-direction:column;gap:10px;pointer-events:none;';
+        document.body.appendChild(node);
+        return node;
+      })();
+      const toast = document.createElement('div');
+      toast.className = `toast ${kind}`;
+      toast.style.cssText = 'min-width:min(360px, calc(100vw - 36px));max-width:min(420px, calc(100vw - 36px));padding:12px 14px;border-radius:14px;border:1px solid var(--line);background:rgba(255,255,255,.96);box-shadow:0 18px 40px rgba(15,23,42,.16);backdrop-filter: blur(8px);display:flex;align-items:flex-start;gap:10px;';
+      const dot = document.createElement('span');
+      dot.style.cssText = 'width:10px;height:10px;border-radius:999px;margin-top:5px;flex:0 0 auto;background:var(--red);';
+      const content = document.createElement('div');
+      const toastTitle = document.createElement('div');
+      const toastText = document.createElement('p');
+      toastTitle.textContent = title || (kind === 'ok' ? 'Sucesso' : 'Atenção');
+      toastTitle.style.cssText = 'font-weight:800;font-size:13px;margin:0 0 2px 0;';
+      toastText.textContent = text;
+      toastText.style.cssText = 'font-size:13px;color:#374151;margin:0;';
+      content.appendChild(toastTitle);
+      content.appendChild(toastText);
+      toast.appendChild(dot);
+      toast.appendChild(content);
+      stack.appendChild(toast);
+      window.setTimeout(() => toast.remove(), 2400);
+    }
+
+    function toIsoFromDateAndHour(dateValue, hour){
+      return `${dateValue}T${String(hour).padStart(2, '0')}:00:00`;
+    }
+
+    function formatarDataHora(iso){
+      if (!iso) return '-';
+      const d = new Date(iso);
+      return d.toLocaleString('pt-BR', { day:'2-digit', month:'2-digit', year:'numeric', hour:'2-digit', minute:'2-digit' });
+    }
+
+    function formatarHora(hora){
+      return `${String(hora).padStart(2,'0')}:00`;
+    }
+
+    function renderSlotList(){
+      if (!currentSlots.length){
+        slotGrid.innerHTML = '<div class="empty">Carregando disponibilidade...</div>';
+        return;
+      }
+
+      slotGrid.innerHTML = `
+        <table class="slot-board">
+          <thead>
+            <tr>
+              <th>Horário</th>
+              <th>Status</th>
+              <th>Ação</th>
+            </tr>
+          </thead>
+          <tbody>
+            ${currentSlots.map(slot => {
+              const slotHour = Number(slot.hora.slice(0, 2));
+              const selected = selectedHour === slotHour;
+              const state = slot.ocupado ? 'Ocupado' : 'Livre';
+              return `
+                <tr class="slot-row ${selected ? 'selected' : ''}">
+                  <td class="slot-time">${slot.hora} - ${formatarHora(slotHour + 1)}</td>
+                  <td><span class="slot-state ${slot.ocupado ? 'busy' : 'free'}">${state}</span></td>
+                  <td>
+                    <button type="button" class="slot-btn" data-hour="${slotHour}" ${slot.ocupado ? 'disabled' : ''}>
+                      ${selected ? 'Selecionado' : 'Escolher'}
+                    </button>
+                  </td>
+                </tr>
+              `;
+            }).join('')}
+          </tbody>
+        </table>
+      `;
+
+      slotGrid.querySelectorAll('.slot-btn:not([disabled])').forEach(button => {
+        button.addEventListener('click', () => {
+          selectedHour = Number(button.dataset.hour);
+          renderSlotList();
+          updateSelectionBox();
+        });
+      });
+    }
+
+    function updateSelectionBox(){
+      if (selectedHour == null){
+        slotSelected.textContent = 'Nenhum horário selecionado.';
+        return;
+      }
+      const inicio = `${formatarHora(selectedHour)} às ${formatarHora(selectedHour + 1)}`;
+      slotSelected.textContent = `Selecionado: ${inicio}`;
+    }
+
+    async function carregarDisponibilidade(){
+      const data = dataInput.value;
+      const equipamento = equipamentoInput.value;
+      if (!data || !equipamento) return;
+
+      availability.innerHTML = '<div class="empty">Atualizando disponibilidade...</div>';
+      try{
+        const res = await fetch(`/api/agendamentos/disponibilidade?data=${encodeURIComponent(data)}&equipamento=${encodeURIComponent(equipamento)}`);
+        if (!res.ok){
+          const text = await res.text();
+          throw new Error(text || 'Falha ao carregar disponibilidade.');
+        }
+
+        currentSlots = await res.json();
+        if (!Array.isArray(currentSlots) || currentSlots.length === 0){
+          availability.innerHTML = '<div class="empty">Nenhum horário disponível para essa data.</div>';
+          slotGrid.innerHTML = '<div class="empty">Sem horários para mostrar.</div>';
+          selectedHour = null;
+          updateSelectionBox();
+          return;
+        }
+
+        renderSlotList();
+        updateAvailabilityPanel();
+
+        if (selectedHour != null && currentSlots.some(s => Number(s.hora.slice(0,2)) === selectedHour && !s.ocupado)) {
+          updateSelectionBox();
+        } else {
+          selectedHour = null;
+          updateSelectionBox();
+        }
+      }catch(err){
+        availability.innerHTML = '<div class="empty">' + (err?.message || 'Erro ao carregar disponibilidade.') + '</div>';
+        slotGrid.innerHTML = '<div class="empty">Não foi possível carregar os horários.</div>';
+      }
+    }
+
+    function updateAvailabilityPanel(){
+      availability.innerHTML = currentSlots.map(slot => {
+        const free = !slot.ocupado;
+        return `
+          <div class="summary-item">
+            <div>
+              <strong>${slot.hora}</strong>
+              <small>${free ? 'Livre' : 'Ocupado'}</small>
+            </div>
+            <span class="badge ${free ? 'ok' : 'busy'}">${free ? 'Disponível' : 'Reservado'}</span>
+          </div>
+        `;
+      }).join('');
+    }
+
+    async function carregarReservasResumo(){
+      try{
+        const res = await fetch('/api/agendamentos/meus');
+        if (!res.ok){
+          const text = await res.text();
+          throw new Error(text || 'Falha ao carregar reservas.');
+        }
+
+        const reservas = await res.json();
+        const ativas = (reservas || []).filter(r => r.status === 'ATIVA');
+
+        if (ativas.length === 0){
+          preview.innerHTML = '<div class="empty">Você ainda não possui reservas cadastradas.</div>';
+          return;
+        }
+
+        preview.innerHTML = `
+          <table class="table">
+            <thead>
+              <tr>
+                <th>Equipamento</th>
+                <th>Início</th>
+                <th>Fim</th>
+                <th>Status</th>
+              </tr>
+            </thead>
+            <tbody>
+              ${ativas.map(r => `
+                <tr>
+                  <td>${r.equipamento}</td>
+                  <td>${formatarDataHora(r.inicio)}</td>
+                  <td>${formatarDataHora(r.fim)}</td>
+                  <td class="status">${r.status}</td>
+                </tr>
+              `).join('')}
+            </tbody>
+          </table>
+        `;
+      }catch(err){
+        preview.innerHTML = '<div class="empty">' + (err?.message || 'Erro ao carregar suas reservas.') + '</div>';
+      }
+    }
+
+    form.addEventListener('submit', async (e) => {
+      e.preventDefault();
+
+      const data = dataInput.value;
+      const equipamento = equipamentoInput.value;
+
+      if (!data){
+        show(msg, 'Escolha uma data.', 'err');
+        return;
+      }
+      if (selectedHour == null){
+        show(msg, 'Escolha um horário disponível.', 'err');
+        return;
+      }
+
+      const payload = {
+        alunoId: ALUNO_ID,
+        inicio: toIsoFromDateAndHour(data, selectedHour),
+        fim: toIsoFromDateAndHour(data, selectedHour + 1),
+        equipamento
+      };
+
+      btn.disabled = true;
+      show(msg, 'Enviando reserva...', 'info');
+
+      try{
+        const res = await fetch('/api/agendamentos', {
+          method: 'POST',
+          headers: {'Content-Type':'application/json', ...csrfHeaders()},
+          body: JSON.stringify(payload)
+        });
+
+        const text = await res.text();
+        if (!res.ok){
+          throw new Error(text || 'Falha ao agendar.');
+        }
+
+        show(msg, 'Agendamento criado com sucesso.', 'ok');
+        showToast('Agendamento realizado com sucesso.', 'ok', 'Pronto');
+        selectedHour = null;
+        updateSelectionBox();
+        await carregarDisponibilidade();
+        await carregarReservasResumo();
+      }catch(err){
+        show(msg, err?.message || 'Erro inesperado ao agendar.', 'err');
+        showToast(err?.message || 'Erro inesperado ao agendar.', 'err', 'Não foi possível');
+      }finally{
+        btn.disabled = false;
+      }
+    });
+
+    dataInput.value = todayLocalDate();
+    updateSelectionBox();
+    renderSlotList();
+    carregarDisponibilidade();
+    carregarReservasResumo();
+
+    dataInput.addEventListener('change', () => {
+      selectedHour = null;
+      updateSelectionBox();
+      carregarDisponibilidade();
+    });
+
+    equipamentoInput.addEventListener('change', () => {
+      selectedHour = null;
+      updateSelectionBox();
+      carregarDisponibilidade();
+    });
+  </script>
+  <script src="/js/portal-transitions.js"></script>
+</body>
+</html>

@@ -1,0 +1,185 @@
+<!DOCTYPE html>
+<html lang="pt-BR" xmlns:th="http://www.thymeleaf.org">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width,initial-scale=1" />
+  <title>Sistema de Agendamento de Cortadoras a Laser - Login</title>
+  <style>
+    :root{
+      --red:#9b0b2aff;
+      --red-dark:#7f0822;
+      --text:#101828;
+      --muted:#667085;
+      --panel:rgba(255,255,255,.93);
+      --shadow:0 18px 40px rgba(15,23,42,.18);
+    }
+    *{box-sizing:border-box}
+    html,body{height:100%}
+    body{
+      margin:0;
+      font:16px/1.45 "Segoe UI", Arial, sans-serif;
+      color:var(--text);
+      background:
+        linear-gradient(180deg, rgba(12,18,28,.25), rgba(12,18,28,.42)),
+        url('/images/loginbackground.png') center/cover no-repeat fixed;
+    }
+    .page{
+      min-height:100vh;
+      display:grid;
+      place-items:center;
+      padding:24px 16px;
+    }
+    .card{
+      width:min(430px, 94vw);
+      background:var(--panel);
+      border:1px solid rgba(255,255,255,.55);
+      border-radius:24px;
+      box-shadow:var(--shadow);
+      padding:28px 26px 22px;
+      backdrop-filter: blur(10px);
+    }
+    .logo{
+      width:74px;
+      height:74px;
+      border-radius:999px;
+      overflow:hidden;
+      margin:0 auto 14px;
+      background:#fff;
+      border:1px solid rgba(15,23,42,.10);
+      box-shadow:0 14px 24px rgba(15,23,42,.12);
+    }
+    .logo img{
+      width:100%;
+      height:100%;
+      object-fit:contain;
+      display:block;
+    }
+    h1{
+      margin:6px 0 6px;
+      text-align:center;
+      font-size:24px;
+      line-height:1.1;
+    }
+    .subtitle{
+      text-align:center;
+      color:var(--muted);
+      font-size:13px;
+      margin-bottom:18px;
+    }
+    label{
+      display:block;
+      font-size:12px;
+      font-weight:700;
+      letter-spacing:.02em;
+      color:#344054;
+      margin:12px 0 6px;
+    }
+    input{
+      width:100%;
+      border:1px solid rgba(15,23,42,.14);
+      border-radius:12px;
+      padding:12px 14px;
+      background:#fff;
+      color:var(--text);
+      font-size:15px;
+      outline:none;
+      transition:border-color .15s ease, box-shadow .15s ease;
+    }
+    input:focus{
+      border-color:var(--red);
+      box-shadow:0 0 0 4px rgba(155,11,42,.14);
+    }
+    .row{
+      display:flex;
+      align-items:center;
+      justify-content:space-between;
+      gap:12px;
+      margin-top:10px;
+    }
+    .link{
+      color:var(--red);
+      text-decoration:none;
+      font-size:12px;
+      font-weight:700;
+    }
+    .link:hover{ color:var(--red-dark); }
+    .btn{
+      width:100%;
+      margin-top:16px;
+      background:var(--red);
+      color:#fff;
+      border:1px solid var(--red);
+      border-radius:12px;
+      padding:12px 14px;
+      font-weight:800;
+      letter-spacing:.01em;
+      cursor:pointer;
+      box-shadow:0 12px 24px rgba(155,11,42,.26);
+      transition:transform .15s ease, filter .15s ease, box-shadow .15s ease;
+    }
+    .btn:hover{
+      filter:brightness(1.03);
+      transform:translateY(-1px);
+      box-shadow:0 16px 28px rgba(155,11,42,.30);
+    }
+    .msg{
+      margin-top:12px;
+      font-size:13px;
+      padding:10px 12px;
+      border-radius:10px;
+      border:1px solid;
+      background:#fff;
+    }
+    .msg.error{
+      color:#7f0822;
+      border-color:rgba(155,11,42,.30);
+      background:#fff4f6;
+    }
+    .msg.ok{
+      color:#065f46;
+      border-color:#bbf7d0;
+      background:#ecfdf5;
+    }
+    .footer{
+      text-align:center;
+      color:#667085;
+      font-size:12px;
+      margin-top:18px;
+    }
+  </style>
+</head>
+<body>
+  <main class="page">
+    <section class="card">
+      <div class="logo">
+        <img src="/images/mackenziesimbolo.png" alt="Mackenzie" />
+      </div>
+      <h1>Portal do Aluno</h1>
+      <form method="post" action="/login">
+        <label for="username">Email ou RA</label>
+        <input id="username" name="username" type="text" autocomplete="username">
+        <label for="password">Senha</label>
+        <input id="password" name="password" type="password" autocomplete="current-password" required />
+
+        <input th:if="${_csrf != null}"
+               type="hidden" th:name="${_csrf.parameterName}" th:value="${_csrf.token}" />
+
+        <div class="row">
+          <span></span>
+          <a class="link" href="#" onclick="return false;">Esqueceu a senha?</a>
+        </div>
+
+        <button class="btn" type="submit">Acessar</button>
+
+        <div class="msg error" th:if="${param.error}">
+          Usuário ou senha inválidos
+        </div>
+        <div class="msg ok" th:if="${param.logout}">
+          Sessão encerrada
+        </div>
+      </form>
+
+    </section>
+  </main>
+</body>
+</html>

@@ -1,0 +1,198 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Sistema de Agendamento de Cortadoras a Laser</title>
+  <style>
+    :root{
+      --primary:#9b0b2aff;
+      --primary-dark:#9b0b2aff;
+      --bg:#ffffff;
+      --text:#1f2937;
+      --muted:#6b7280;
+      --line:#e5e7eb;
+      --card:#ffffff;
+      --shadow:0 18px 50px rgba(15,23,42,.10);
+    }
+    *{box-sizing:border-box}
+    html,body{height:100%}
+    body{
+      margin:0;
+      font-family: "Segoe UI", system-ui, -apple-system, sans-serif;
+      background:var(--bg);
+      color:var(--text);
+    }
+    .shell{
+      width:min(1080px, 94vw);
+      margin:0 auto;
+      padding:24px 0 40px;
+    }
+    .topbar{
+      display:flex;
+      align-items:center;
+      justify-content:space-between;
+      gap:18px;
+      margin-bottom:22px;
+    }
+    .brand{
+      display:flex;
+      align-items:center;
+      gap:12px;
+      font-weight:800;
+    }
+    .logo{
+      width:48px;
+      height:48px;
+      border-radius:999px;
+      overflow:hidden;
+      border:1px solid rgba(229,9,20,.16);
+      box-shadow:0 10px 20px rgba(229,9,20,.15);
+      background:#fff;
+    }
+    .logo img{
+      width:100%;
+      height:100%;
+      object-fit:contain;
+      display:block;
+    }
+    .brand small{
+      display:block;
+      color:var(--muted);
+      font-weight:500;
+      font-size:12px;
+      margin-top:2px;
+    }
+    .toplink{
+      color:var(--primary);
+      text-decoration:none;
+      font-weight:700;
+    }
+    .panel{
+      background:var(--card);
+      border:1px solid var(--line);
+      border-radius:24px;
+      box-shadow:var(--shadow);
+      overflow:hidden;
+    }
+    .intro{
+      padding:30px;
+      text-align:left;
+    }
+    h1{
+      margin:6px 0 10px;
+      font-size:clamp(2rem, 4vw, 3.3rem);
+      line-height:1.02;
+      letter-spacing:-.03em;
+    }
+    .intro p{
+      margin:0;
+      color:var(--muted);
+      font-size:16px;
+      line-height:1.65;
+      max-width:58ch;
+    }
+    .cta-row{
+      display:flex;
+      flex-wrap:wrap;
+      gap:12px;
+      margin-top:22px;
+    }
+    .cta{
+      display:inline-flex;
+      align-items:center;
+      justify-content:center;
+      gap:10px;
+      padding:14px 18px;
+      border-radius:14px;
+      border:1px solid var(--primary);
+      text-decoration:none;
+      font-weight:800;
+      transition:transform .18s ease, box-shadow .18s ease, filter .18s ease;
+    }
+    .cta.primary{
+      background:var(--primary);
+      color:#fff;
+      box-shadow:0 16px 30px rgba(229,9,20,.22);
+    }
+    .cta.secondary{
+      background:#fff;
+      color:var(--primary);
+    }
+    .cta:hover{
+      transform:translateY(-2px);
+      filter:brightness(1.02);
+    }
+    .actions{
+      margin-top:18px;
+      display:grid;
+      gap:10px;
+    }
+    .action{
+      display:flex;
+      align-items:center;
+      gap:14px;
+      text-decoration:none;
+      padding:14px;
+      border:1px solid var(--line);
+      border-radius:18px;
+      background:#fff;
+      transition:transform .18s ease, box-shadow .18s ease, border-color .18s ease;
+    }
+    .action:hover{
+      transform:translateY(-2px);
+      border-color:#f5b5b5;
+      box-shadow:0 16px 28px rgba(15,23,42,.08);
+    }
+    .action img{
+      width:64px;
+      height:64px;
+      object-fit:cover;
+      border-radius:16px;
+      border:1px solid #fde2e2;
+      flex:0 0 auto;
+    }
+    .action strong{
+      display:block;
+      font-size:16px;
+      color:#111827;
+    }
+  </style>
+</head>
+<body>
+  <div class="shell">
+    <header class="topbar">
+      <div class="brand">
+        <div class="logo"><img src="/images/mackenziesimbolo.png" alt="Mackenzie" /></div>
+        <div>
+          Sistema de Agendamento de Cortadoras a Laser
+        </div>
+      </div>
+      <a class="toplink" href="/app">Abrir painel</a>
+    </header>
+
+    <main class="panel intro">
+      <h1>Agendamentos das cortadoras a laser da FAU.</h1>
+      <p>Escolha uma ação abaixo para entrar no fluxo principal do sistema.</p>
+      <div class="cta-row">
+        <a class="cta primary" href="/app">Entrar no painel</a>
+        <a class="cta secondary" href="/login">Ir para login</a>
+      </div>
+      <div class="actions">
+        <a class="action" href="/agendar">
+          <img src="/images/agendar.png" alt="Agendar horário" />
+          <div><strong>Agendar horário</strong></div>
+        </a>
+        <a class="action" href="/cancelar">
+          <img src="/images/cancelar.png" alt="Cancelar horário" />
+          <div><strong>Cancelar horário</strong></div>
+        </a>
+        <a class="action" href="/suplente">
+          <img src="/images/suplente.png" alt="Incluir suplente" />
+          <div><strong>Incluir suplente</strong></div>
+        </a>
+      </div>
+    </main>
+  </div>
+</body>
+</html>

@@ -1,0 +1,292 @@
+<!doctype html>
+<html lang="pt-BR" xmlns:th="http://www.thymeleaf.org">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width,initial-scale=1" />
+  <title>Incluir suplente</title>
+  <meta name="_csrf" th:content="${_csrf.token}" />
+  <meta name="_csrf_header" th:content="${_csrf.headerName}" />
+  <link rel="stylesheet" href="/css/portal-shell.css" />
+  <style>
+    :root{
+      --red:#9b0b2aff;
+      --red-dark:#7f0822;
+      --text:#111827;
+      --muted:#6b7280;
+      --line:rgba(15,23,42,.12);
+      --card:#ffffff;
+      --soft:#f9fafb;
+      --shadow:0 12px 32px rgba(15,23,42,.10);
+      --rail-w:76px;
+    }
+    *{box-sizing:border-box}
+    html,body{height:100%}
+    body{
+      margin:0;
+      font:16px/1.45 "Segoe UI", Arial, sans-serif;
+      color:var(--text);
+      background:#ffffff;
+    }
+    .shell{min-height:100vh;display:grid;grid-template-rows:auto auto 1fr;}
+    .topbar{
+      height:58px;background:rgba(255,255,255,.96);border-bottom:1px solid rgba(15,23,42,.10);
+      display:grid;grid-template-columns:1fr 1fr auto;align-items:center;gap:16px;padding:0 18px 0 20px;
+    }
+    .campus{color:#2b6f9a;font-weight:800;text-transform:uppercase;font-size:13px;}
+    .course{text-align:center;font-size:20px;font-weight:800;color:#111827;}
+    .user-chip{display:flex;align-items:center;gap:10px;font-weight:700;color:#111827;white-space:nowrap;}
+    .user-icon{width:34px;height:34px;border-radius:999px;border:1px solid rgba(15,23,42,.15);background:#fff;display:grid;place-items:center;overflow:hidden;box-shadow:0 6px 16px rgba(15,23,42,.10);flex:0 0 auto;}
+    .user-icon img{width:22px;height:22px;object-fit:contain;display:block;}
+    .subbar{
+      height:56px;background-image:url('/images/barratopointermediaria.png');
+      background-position:center;
+      background-repeat:no-repeat;
+      background-size:100% 100%;
+      color:#fff;display:flex;align-items:center;justify-content:space-between;padding:0 18px 0 16px;border-bottom:1px solid rgba(255,255,255,.16);
+    }
+    .content{min-height:calc(100vh - 114px);display:grid;grid-template-columns:var(--rail-w) minmax(0,1fr);}
+    .rail{
+      background-image:url('/images/barralateralesquerda.png');
+      background-position:center top;
+      background-repeat:no-repeat;
+      background-size:100% 100%;
+      border-right:1px solid rgba(255,255,255,.15);display:flex;flex-direction:column;padding:8px 0 14px;
+    }
+    .rail-slot{width:100%;min-height:48px;border-top:1px solid rgba(255,255,255,.15);display:grid;place-items:center;color:#fff;text-decoration:none;transition:background .15s ease, transform .15s ease;}
+    .rail-slot:hover{background:rgba(255,255,255,.10);transform:translateY(-1px);}
+    .rail-slot img{width:22px;height:22px;object-fit:contain;display:block;filter:brightness(0) invert(1);}
+    .rail-slot.brand{min-height:50px;border-top:none;margin-bottom:2px;background:rgba(255,255,255,.06);}
+    .rail-slot.empty{
+      cursor:default;
+    }
+    .rail-slot.empty:hover{
+      background:transparent;
+      transform:none;
+    }
+    .workspace{padding:22px;overflow:auto;}
+    .workspace-card{background:rgba(255,255,255,.96);border:1px solid rgba(255,255,255,.75);border-radius:24px;box-shadow:var(--shadow);padding:18px;}
+    .hero{margin-bottom:16px;padding:4px 4px 18px;border-bottom:1px solid var(--line);}
+    .hero h1{margin:0;font-size:24px;line-height:1.08;letter-spacing:-.02em;}
+    .hero p{margin:8px 0 0;color:var(--muted);}
+    .card{background:var(--card);border:1px solid var(--line);border-radius:18px;box-shadow:var(--shadow);padding:22px;}
+    .muted{margin:0 0 12px 0;color:var(--muted);font-size:14px;}
+    .list-header{margin-top:8px;margin-bottom:6px;font-size:15px;font-weight:600;color:#111827;display:flex;justify-content:space-between;align-items:center;gap:8px;}
+    .list-header small{font-weight:400;color:var(--muted);font-size:13px;}
+    .res-list{margin-top:6px;border-radius:16px;border:1px solid var(--line);background:#f9fafb;max-height:360px;overflow-y:auto;padding:6px 4px;}
+    .res-item{display:flex;align-items:center;justify-content:space-between;gap:18px;padding:10px 12px;border-radius:12px;margin:2px 4px;background:#ffffff;border:1px solid transparent;transition:box-shadow .15s, border-color .15s, transform .15s, background .15s;}
+    .res-item:hover{box-shadow:0 10px 20px rgba(15,23,42,.08);border-color:#fee2e2;transform:translateY(-1px);background:#fff7f7;}
+    .res-main{font-weight:600;font-size:14px;color:#111827;}
+    .res-sub{margin-top:2px;font-size:13px;color:#4b5563;}
+    .res-status{font-size:12px;font-weight:600;color:#047857;}
+    .res-meta{font-size:12px;color:#6b7280;margin-top:2px;}
+    .res-actions{display:flex;align-items:center;gap:8px;min-width:270px;}
+    .email-input{flex:1;min-width:0;padding:8px 10px;border-radius:999px;border:1px solid var(--line);font-size:13px;outline:none;transition:border-color .15s ease, box-shadow .15s ease, transform .15s ease;}
+    .email-input:focus{border-color:var(--red);box-shadow:0 0 0 3px rgba(155,11,42,.18);}
+    .btn-add{
+      background:var(--red);border-radius:999px;border:1px solid var(--red);padding:8px 14px;color:#fff;font-size:13px;font-weight:700;cursor:pointer;
+      box-shadow:0 10px 24px rgba(155,11,42,.35);transition:filter .15s, transform .15s ease, box-shadow .15s;white-space:nowrap;
+    }
+    .btn-add:hover{filter:brightness(1.05);transform:translateY(-1px);box-shadow:0 12px 26px rgba(155,11,42,.45);}
+    .btn-add:active{transform:translateY(0);}
+    .btn-add[disabled]{opacity:.6;cursor:not-allowed;box-shadow:none;}
+    .footer{margin-top:16px;font-size:12px;color:var(--muted);text-align:right;}
+    .toast-stack{position:fixed;top:18px;right:18px;z-index:9999;display:flex;flex-direction:column;gap:10px;pointer-events:none;}
+    .msg{margin-top:12px;font-size:14px;padding:10px 12px;border-radius:10px;border:1px solid;background:#fff;display:none;}
+    .msg.ok{color:#065f46;border-color:#bbf7d0;background:#ecfdf5;}
+    .msg.err{color:#991b1b;border-color:#fecaca;background:#fee2e2;}
+    .msg.info{color:#1f2937;border-color:#e5e7eb;background:#f9fafb;}
+    .empty{padding:12px 14px;border:1px dashed var(--line);border-radius:12px;color:var(--muted);background:#fff;}
+    @media (max-width: 920px){
+      .topbar{grid-template-columns:1fr;height:auto;padding:12px 16px;text-align:center;}
+      .course{font-size:18px;}
+      .user-chip{justify-content:center;}
+      .content{grid-template-columns:56px minmax(0,1fr);}
+      .rail{width:56px;}
+      .workspace{padding:14px;}
+      .workspace-card{padding:14px;}
+      .res-item{flex-direction:column;align-items:stretch;}
+      .res-actions{min-width:0;flex-direction:column;align-items:stretch;}
+    }
+  </style>
+</head>
+<body>
+  <div class="shell">
+    <header class="topbar">
+      <div class="campus">HIGIENÓPOLIS</div>
+      <div class="course">ARQUITETURA E URBANISMO</div>
+      <div class="user-chip">
+        <span th:text="|${alunoNome} (RA: ${alunoId})|">Nome do Aluno (RA: 10400000)</span>
+        <div class="user-icon"><img src="/images/usuario.png" alt="Usuario" /></div>
+      </div>
+    </header>
+
+    <div class="subbar" aria-hidden="true"></div>
+
+    <main class="content">
+      <aside class="rail" aria-label="Barra lateral decorativa">
+        <div class="rail-slot empty" aria-hidden="true"></div>
+        <a class="rail-slot" href="/app" aria-label="Laser">
+          <img src="/images/cortadoraicone.pngo.png" alt="" aria-hidden="true" />
+        </a>
+        <div class="rail-slot" aria-hidden="true"></div>
+        <div class="rail-slot" aria-hidden="true"></div>
+        <div class="rail-slot" aria-hidden="true"></div>
+        <div class="rail-slot" aria-hidden="true"></div>
+        <div class="rail-slot" aria-hidden="true"></div>
+        <div class="rail-slot" aria-hidden="true"></div>
+        <div class="rail-slot" aria-hidden="true"></div>
+        <a class="laser-shortcut" href="/app" aria-label="Abrir painel da cortadora a laser">
+          <img src="/images/cortadoraicone.pngo.png" alt="" aria-hidden="true" />
+        </a>
+      </aside>
+
+      <section class="workspace">
+        <div class="workspace-card">
+          <div class="hero">
+            <h1>Incluir suplente</h1>
+          </div>
+
+          <section class="card">
+            <p class="muted">
+              Escolha uma reserva na lista abaixo, informe o e-mail do aluno que será o suplente
+              e clique em <b>Incluir</b>. Apenas o titular pode incluir suplente e somente enquanto
+              a reserva ainda não terminou.
+            </p>
+
+            <div class="list-header">
+              <span>Minhas reservas ativas</span>
+            </div>
+
+            <div id="res-list" class="res-list">
+              <div class="msg info" style="display:block;">Carregando reservas…</div>
+            </div>
+
+            <div id="msg" class="msg info"></div>
+          </section>
+        </div>
+      </section>
+    </main>
+  </div>
+
+  <div class="toast-stack" id="toast-stack" aria-live="polite" aria-atomic="true"></div>
+  <script src="/js/csrf.js"></script>
+  <script th:inline="none">
+    const listEl = document.getElementById('res-list');
+    const msgEl  = document.getElementById('msg');
+    const toastStack = document.getElementById('toast-stack');
+
+    function showMsg(text, kind='info'){
+      msgEl.className = 'msg ' + kind;
+      msgEl.textContent = text;
+      msgEl.style.display = 'block';
+    }
+
+    function showToast(text, kind='ok', title=''){
+      const toast = document.createElement('div');
+      toast.className = `toast ${kind}`;
+      toast.style.cssText = 'min-width:min(360px, calc(100vw - 36px));max-width:min(420px, calc(100vw - 36px));padding:12px 14px;border-radius:14px;border:1px solid var(--line);background:rgba(255,255,255,.96);box-shadow:0 18px 40px rgba(15,23,42,.16);backdrop-filter: blur(8px);display:flex;align-items:flex-start;gap:10px;';
+      const dot = document.createElement('span');
+      dot.style.cssText = 'width:10px;height:10px;border-radius:999px;margin-top:5px;flex:0 0 auto;background:var(--red);';
+      const content = document.createElement('div');
+      const toastTitle = document.createElement('div');
+      const toastText = document.createElement('p');
+      toastTitle.style.cssText = 'font-weight:800;font-size:13px;margin:0 0 2px 0;';
+      toastText.style.cssText = 'font-size:13px;color:#374151;margin:0;';
+      toastTitle.textContent = title || (kind === 'ok' ? 'Sucesso' : 'Atenção');
+      toastText.textContent = text;
+      content.appendChild(toastTitle);
+      content.appendChild(toastText);
+      toast.appendChild(dot);
+      toast.appendChild(content);
+      toastStack.appendChild(toast);
+      window.setTimeout(() => toast.remove(), 2400);
+    }
+
+    function formatarDataHora(iso){
+      if (!iso) return '-';
+      const d = new Date(iso);
+      return d.toLocaleString('pt-BR', { day:'2-digit', month:'2-digit', year:'numeric', hour:'2-digit', minute:'2-digit' });
+    }
+
+    async function carregarReservas(){
+      listEl.innerHTML = '<div class="msg info" style="display:block;">Carregando reservas…</div>';
+      try{
+        const res = await fetch('/api/agendamentos/meus');
+        if (!res.ok){
+          const text = await res.text();
+          throw new Error(text || 'Falha ao carregar reservas.');
+        }
+        const reservas = await res.json();
+        const ativas = reservas.filter(r => r.status === 'ATIVA');
+
+        if (ativas.length === 0){
+          listEl.innerHTML = '<div class="msg info" style="display:block;">Você não possui reservas ativas para incluir um suplente.</div>';
+          return;
+        }
+
+        listEl.innerHTML = ativas.map(r => {
+          const inicio = formatarDataHora(r.inicio);
+          const fim = formatarDataHora(r.fim);
+          return `
+            <div class="res-item">
+              <div>
+                <div class="res-main">#${r.id} • ${r.equipamento}</div>
+                <div class="res-sub">${inicio} — ${fim}</div>
+                <div class="res-meta">Status: <span class="res-status">${r.status}</span></div>
+              </div>
+              <div class="res-actions">
+                <input type="email" id="email-${r.id}" class="email-input" placeholder="E-mail do suplente" />
+                <button class="btn-add" onclick="incluirSuplente(${r.id}, this)">Incluir suplente</button>
+              </div>
+            </div>
+          `;
+        }).join('');
+      }catch(err){
+        listEl.innerHTML = '<div class="msg err" style="display:block;">' + (err?.message || 'Erro ao carregar reservas.') + '</div>';
+      }
+    }
+
+    async function incluirSuplente(reservaId, btn){
+      const emailInput = document.getElementById(`email-${reservaId}`);
+      const email = emailInput.value.trim();
+
+      if (!email){
+        showMsg('Informe o e-mail do suplente para a reserva #' + reservaId + '.', 'err');
+        emailInput.focus();
+        return;
+      }
+
+      btn.disabled = true;
+      showMsg(`Enviando inclusão de suplente na reserva #${reservaId}…`, 'info');
+
+      try{
+        const params = new URLSearchParams();
+        params.append('suplenteEmail', email);
+
+        const res = await fetch(`/api/agendamentos/${reservaId}/suplente?` + params.toString(), {
+          method: 'POST',
+          headers: csrfHeaders()
+        });
+
+        const text = await res.text();
+
+        if (!res.ok){
+          throw new Error(text || 'Falha ao incluir suplente.');
+        }
+
+        showMsg((text || `Suplente incluído com sucesso na reserva #${reservaId}.`) + ' ', 'ok');
+        showToast(text || `Suplente incluído com sucesso na reserva #${reservaId}.`, 'ok', 'Pronto');
+        emailInput.value = '';
+      }catch(err){
+        showMsg(err?.message || 'Erro inesperado ao incluir suplente.', 'err');
+        showToast(err?.message || 'Erro inesperado ao incluir suplente.', 'err', 'Não foi possível');
+      }finally{
+        btn.disabled = false;
+      }
+    }
+
+    carregarReservas();
+  </script>
+  <script src="/js/portal-transitions.js"></script>
+</body>
+</html>

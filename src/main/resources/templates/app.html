@@ -1,0 +1,601 @@
+<!doctype html>
+<html lang="pt-BR" xmlns:th="http://www.thymeleaf.org">
+<head>
+  <meta charset="utf-8">
+  <title>Painel de reservas • FAU</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <link rel="stylesheet" href="/css/portal-shell.css" />
+  <style>
+    :root{
+      --red:#9b0b2aff;
+      --red-dark:#7f0822;
+      --white:#ffffff;
+      --text:#111827;
+      --muted:#667085;
+      --line:rgba(15,23,42,.12);
+      --soft:#f8fafc;
+      --panel:#ffffff;
+      --shadow:0 18px 42px rgba(15,23,42,.16);
+      --rail-w:76px;
+    }
+    *{box-sizing:border-box}
+    html,body{height:100%}
+    body{
+      margin:0;
+      font-family:"Segoe UI", Arial, sans-serif;
+      background:#ffffff;
+      color:var(--text);
+    }
+    .shell{
+      min-height:100vh;
+      display:grid;
+      grid-template-rows:auto auto 1fr;
+    }
+    .topbar{
+      height:58px;
+      background:rgba(255,255,255,.96);
+      border-bottom:1px solid rgba(15,23,42,.10);
+      display:grid;
+      grid-template-columns: 1fr 1fr auto;
+      align-items:center;
+      gap:16px;
+      padding:0 18px 0 20px;
+    }
+    .campus{
+      color:#2b6f9a;
+      font-weight:800;
+      letter-spacing:.01em;
+      text-transform:uppercase;
+      font-size:13px;
+    }
+    .course{
+      text-align:center;
+      font-size:20px;
+      font-weight:800;
+      color:#111827;
+    }
+    .user-chip{
+      display:flex;
+      align-items:center;
+      gap:10px;
+      font-weight:700;
+      color:#111827;
+      white-space:nowrap;
+    }
+    .user-icon{
+      width:34px;
+      height:34px;
+      border-radius:999px;
+      border:1px solid rgba(15,23,42,.15);
+      background:#fff;
+      display:grid;
+      place-items:center;
+      overflow:hidden;
+      box-shadow:0 6px 16px rgba(15,23,42,.10);
+      flex:0 0 auto;
+    }
+    .user-icon img{
+      width:22px;
+      height:22px;
+      object-fit:contain;
+      display:block;
+    }
+    .subbar{
+      height:56px;
+      background-image:url('/images/barratopointermediaria.png');
+      background-position:center;
+      background-repeat:no-repeat;
+      background-size:100% 100%;
+      color:#fff;
+      display:flex;
+      align-items:center;
+      justify-content:space-between;
+      padding:0 18px 0 16px;
+      border-bottom:1px solid rgba(255,255,255,.16);
+    }
+    .content{
+      min-height:calc(100vh - 114px);
+      display:grid;
+      grid-template-columns: var(--rail-w) minmax(0, 1fr);
+    }
+    .rail{
+      background-image:url('/images/barralateralesquerda.png');
+      background-position:center top;
+      background-repeat:no-repeat;
+      background-size:100% 100%;
+      border-right:1px solid rgba(255,255,255,.15);
+      display:flex;
+      flex-direction:column;
+      align-items:stretch;
+      padding:8px 0 14px;
+      gap:0;
+    }
+    .rail-slot{
+      width:100%;
+      min-height:48px;
+      border-top:1px solid rgba(255,255,255,.15);
+      display:grid;
+      place-items:center;
+      color:#fff;
+      text-decoration:none;
+      transition:background .15s ease, transform .15s ease;
+    }
+    .rail-slot:hover{
+      background:rgba(255,255,255,.10);
+      transform:translateY(-1px);
+    }
+    .rail-slot img{
+      width:22px;
+      height:22px;
+      object-fit:contain;
+      display:block;
+      filter:brightness(0) invert(1);
+    }
+    .rail-slot.brand{
+      min-height:50px;
+      border-top:none;
+      margin-bottom:2px;
+      background:rgba(255,255,255,.06);
+    }
+    .rail-slot.empty{
+      cursor:default;
+    }
+    .rail-slot.empty:hover{
+      background:transparent;
+      transform:none;
+    }
+    .workspace{
+      padding:22px;
+      overflow:auto;
+    }
+    .workspace-card{
+      background:rgba(255,255,255,.95);
+      border:1px solid rgba(255,255,255,.7);
+      border-radius:24px;
+      box-shadow:var(--shadow);
+      padding:18px;
+    }
+    .hero{
+      display:flex;
+      align-items:flex-start;
+      justify-content:space-between;
+      gap:18px;
+      padding:6px 4px 18px;
+      border-bottom:1px solid var(--line);
+      margin-bottom:16px;
+    }
+    .hero h1{
+      margin:0;
+      font-size:24px;
+      line-height:1.08;
+      letter-spacing:-.02em;
+    }
+    .hero p{
+      margin:8px 0 0;
+      color:var(--muted);
+      max-width:70ch;
+    }
+    .actions{
+      display:grid;
+      grid-template-columns: repeat(3, 1fr);
+      gap:12px;
+      margin:0 0 16px;
+    }
+    .quick-link{
+      display:flex;
+      align-items:center;
+      gap:14px;
+      text-decoration:none;
+      border:1px solid var(--line);
+      border-radius:18px;
+      background:#fff;
+      padding:16px 14px;
+      box-shadow:0 10px 22px rgba(15,23,42,.05);
+      transition:transform .18s ease, box-shadow .18s ease, border-color .18s ease;
+      min-height:104px;
+    }
+    .quick-link:hover{
+      transform:translateY(-2px);
+      box-shadow:0 18px 34px rgba(15,23,42,.10);
+      border-color:#f5b5b5;
+    }
+    .quick-thumb{
+      width:52px;
+      height:52px;
+      flex:0 0 auto;
+      border-radius:14px;
+      background:var(--red);
+      border:1px solid var(--red-dark);
+      display:grid;
+      place-items:center;
+      overflow:hidden;
+      box-shadow:0 8px 18px rgba(155,11,42,.18);
+    }
+    .quick-thumb img{
+      width:24px;
+      height:24px;
+      object-fit:contain;
+      display:block;
+      filter:brightness(0) invert(1);
+    }
+    .quick-text strong{
+      display:block;
+      color:#111827;
+      font-size:15px;
+      margin-bottom:2px;
+    }
+    .quick-text span{
+      color:var(--muted);
+      font-size:13px;
+    }
+    .grid{
+      display:grid;
+      grid-template-columns: 1.45fr .95fr;
+      gap:16px;
+    }
+    .card{
+      background:var(--panel);
+      border:1px solid var(--line);
+      border-radius:18px;
+      padding:16px;
+      transition:transform .2s ease, box-shadow .2s ease;
+    }
+    .card:hover{ transform:translateY(-2px); box-shadow:0 14px 26px rgba(15,23,42,.08); }
+    .cal-head{
+      display:flex;
+      align-items:center;
+      justify-content:space-between;
+      gap:12px;
+      margin-bottom:10px;
+    }
+    .cal-head h2{
+      margin:0;
+      font-size:18px;
+    }
+    .cal-nav{
+      display:flex;
+      gap:8px;
+      flex-wrap:wrap;
+      justify-content:flex-end;
+    }
+    .btn{
+      border:1px solid var(--line);
+      background:#fff;
+      border-radius:10px;
+      padding:8px 10px;
+      cursor:pointer;
+      font-weight:700;
+    }
+    .btn:hover{ border-color:#d1d5db; }
+    .cal-grid{
+      display:grid;
+      grid-template-columns: repeat(7, 1fr);
+      border-top:1px solid var(--line);
+      border-left:1px solid var(--line);
+    }
+    .dow{
+      text-align:center;
+      font-size:12px;
+      color:var(--muted);
+      padding:8px 0;
+      background:var(--soft);
+      border-right:1px solid var(--line);
+      border-bottom:1px solid var(--line);
+      font-weight:700;
+    }
+    .day{
+      min-height:88px;
+      padding:8px;
+      border-right:1px solid var(--line);
+      border-bottom:1px solid var(--line);
+      position:relative;
+      background:#fff;
+      cursor:pointer;
+      transition: transform .12s ease, background .12s ease, box-shadow .12s ease;
+    }
+    .day.other{ background:#fafafa; color:#9ca3af; }
+    .day:hover{
+      background:#fdf2f2;
+      transform:translateY(-1px);
+      box-shadow:inset 0 0 0 1px rgba(155,11,42,.08);
+    }
+    .day .num{ font-weight:800; font-size:13px; }
+    .badge{
+      position:absolute;
+      right:8px;
+      top:8px;
+      width:8px;
+      height:8px;
+      background:var(--red);
+      border-radius:999px;
+      box-shadow:0 0 0 2px #fff;
+    }
+    .today{
+      outline:2px solid var(--red);
+      outline-offset:-2px;
+      border-radius:8px;
+    }
+    .panel h3{
+      margin:0 0 8px 0;
+      font-size:16px;
+    }
+    .empty{
+      padding:10px;
+      border:1px dashed var(--line);
+      border-radius:10px;
+      background:#fff;
+      color:var(--muted);
+    }
+    .item{
+      border:1px solid var(--line);
+      border-radius:12px;
+      padding:10px 12px;
+      margin:8px 0;
+      background:#fff;
+    }
+    .item b{ color:#111; }
+    .item small{ color:var(--muted); }
+    @media (max-width: 1100px){
+      .grid{ grid-template-columns:1fr; }
+      .actions{ grid-template-columns:1fr; }
+      .hero{ flex-direction:column; }
+    }
+    @media (max-width: 920px){
+      .topbar{
+        grid-template-columns:1fr;
+        height:auto;
+        padding:12px 16px;
+        text-align:center;
+      }
+      .course{ font-size:18px; }
+      .user-chip{ justify-content:center; }
+      .content{ grid-template-columns:56px minmax(0,1fr); }
+      .rail{ width:56px; }
+      .workspace{ padding:14px; }
+      .workspace-card{ padding:14px; }
+    }
+  </style>
+</head>
+<body>
+  <div class="shell">
+    <header class="topbar">
+      <div class="campus">HIGIENÓPOLIS</div>
+      <div class="course">ARQUITETURA E URBANISMO</div>
+      <div class="user-chip">
+        <span th:text="|${alunoNome} (RA: ${alunoId})|">Nome do Aluno (RA: 10400000)</span>
+        <div class="user-icon">
+          <img src="/images/usuario.png" alt="Usuario" />
+        </div>
+      </div>
+    </header>
+
+    <div class="subbar" aria-hidden="true"></div>
+
+    <main class="content">
+      <aside class="rail" aria-label="Barra lateral decorativa">
+        <div class="rail-slot empty" aria-hidden="true"></div>
+        <a class="rail-slot" href="/app" aria-label="Laser">
+          <img src="/images/cortadoraicone.pngo.png" alt="" aria-hidden="true" />
+        </a>
+        <div class="rail-slot" aria-hidden="true"></div>
+        <div class="rail-slot" aria-hidden="true"></div>
+        <div class="rail-slot" aria-hidden="true"></div>
+        <div class="rail-slot" aria-hidden="true"></div>
+        <div class="rail-slot" aria-hidden="true"></div>
+        <div class="rail-slot" aria-hidden="true"></div>
+        <div class="rail-slot" aria-hidden="true"></div>
+        <a class="laser-shortcut" href="/app" aria-label="Abrir painel da cortadora a laser">
+          <img src="/images/cortadoraicone.pngo.png" alt="" aria-hidden="true" />
+        </a>
+      </aside>
+
+      <section class="workspace">
+        <div class="workspace-card">
+          <div class="hero">
+            <div>
+              <h1>Agendamento de Cortadoras a Laser FAU</h1>
+            </div>
+          </div>
+
+          <div class="actions">
+            <a class="quick-link" href="/agendar">
+              <div class="quick-thumb"><img src="/images/agendar.png" alt="Agendar horário" /></div>
+              <div class="quick-text">
+                <strong>Agendar horário</strong>
+                <span>Aluno pode agendar um horário</span>
+              </div>
+            </a>
+            <a class="quick-link" href="/cancelar">
+              <div class="quick-thumb"><img src="/images/cancelar.png" alt="Cancelar horário" /></div>
+              <div class="quick-text">
+                <strong>Cancelar horário</strong>
+                <span>Aluno pode cancelar um horário agendado</span>
+              </div>
+            </a>
+            <a class="quick-link" href="/suplente">
+              <div class="quick-thumb"><img src="/images/suplente.png" alt="Incluir suplente" /></div>
+              <div class="quick-text">
+                <strong>Incluir suplente</strong>
+                <span>Aluno pode ceder sua vaga para outra pessoa</span>
+              </div>
+            </a>
+          </div>
+
+          <div class="grid">
+            <section class="card">
+              <div class="cal-head">
+                <h2 id="cal-title">Carregando...</h2>
+                <div class="cal-nav">
+                  <button class="btn" id="prev-month">&lt; Anterior</button>
+                  <button class="btn" id="today-btn">Hoje</button>
+                  <button class="btn" id="next-month">Próximo &gt;</button>
+                </div>
+              </div>
+
+              <div class="cal-grid" id="cal-grid">
+                <div class="dow">Dom</div><div class="dow">Seg</div><div class="dow">Ter</div>
+                <div class="dow">Qua</div><div class="dow">Qui</div><div class="dow">Sex</div><div class="dow">Sab</div>
+              </div>
+            </section>
+
+            <aside class="card panel">
+              <h3 id="panel-title">Reservas do dia</h3>
+              <div id="panel-list" class="empty">Clique em um dia do calendario para ver as reservas.</div>
+            </aside>
+          </div>
+
+          <form data-logout action="/logout" method="post" style="display:none">
+            <input th:if="${_csrf != null}"
+                   type="hidden" th:name="${_csrf.parameterName}" th:value="${_csrf.token}" />
+          </form>
+        </div>
+      </section>
+    </main>
+  </div>
+
+  <script th:inline="none">
+    const calTitle = document.getElementById('cal-title');
+    const grid = document.getElementById('cal-grid');
+    const panelTitle = document.getElementById('panel-title');
+    const panelList = document.getElementById('panel-list');
+
+    let view = new Date();
+    let reservas = [];
+    let reservasPorDia = {};
+
+    function ymd(d){
+      return `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2,'0')}-${String(d.getDate()).padStart(2,'0')}`;
+    }
+
+    function formatarHora(iso){
+      if (!iso) return '-';
+      const d = new Date(iso);
+      return d.toLocaleTimeString('pt-BR', { hour:'2-digit', minute:'2-digit' });
+    }
+
+    function rebuildIndex(){
+      reservasPorDia = {};
+      for(const r of reservas){
+        const key = ymd(new Date(r.inicio));
+        (reservasPorDia[key] ||= []).push(r);
+      }
+    }
+
+    function render(){
+      while(grid.children.length > 7) grid.removeChild(grid.lastChild);
+
+      const year = view.getFullYear();
+      const month = view.getMonth();
+      const monthNames = ['janeiro','fevereiro','março','abril','maio','junho','julho','agosto','setembro','outubro','novembro','dezembro'];
+      calTitle.textContent = `${monthNames[month].charAt(0).toUpperCase() + monthNames[month].slice(1)} ${year}`;
+
+      const first = new Date(year, month, 1);
+      const startDay = first.getDay();
+      const daysInMonth = new Date(year, month + 1, 0).getDate();
+      const daysPrev = new Date(year, month, 0).getDate();
+
+      for(let i = startDay - 1; i >= 0; i--){
+        const num = daysPrev - i;
+        grid.appendChild(createDay(num, new Date(year, month - 1, num), true));
+      }
+
+      for(let d = 1; d <= daysInMonth; d++){
+        grid.appendChild(createDay(d, new Date(year, month, d), false));
+      }
+
+      const totalCells = grid.children.length;
+      const need = Math.ceil(totalCells / 7) * 7 - totalCells;
+      for(let d = 1; d <= need; d++){
+        grid.appendChild(createDay(d, new Date(year, month + 1, d), true));
+      }
+    }
+
+    function createDay(num, dateObj, isOther){
+      const el = document.createElement('div');
+      el.className = 'day' + (isOther ? ' other' : '');
+
+      const numEl = document.createElement('div');
+      numEl.className = 'num';
+      numEl.textContent = num;
+      el.appendChild(numEl);
+
+      const key = ymd(dateObj);
+      if (reservasPorDia[key]?.length){
+        const dot = document.createElement('span');
+        dot.className = 'badge';
+        el.appendChild(dot);
+      }
+
+      const now = new Date();
+      if (
+        dateObj.getFullYear() === now.getFullYear() &&
+        dateObj.getMonth() === now.getMonth() &&
+        dateObj.getDate() === now.getDate()
+      ){
+        el.classList.add('today');
+      }
+
+      el.addEventListener('click', () => openDay(dateObj));
+      return el;
+    }
+
+    function openDay(dateObj){
+      const key = ymd(dateObj);
+      const list = reservasPorDia[key] || [];
+      panelTitle.textContent = `Reservas de ${key.split('-').reverse().join('/')}`;
+
+      if (!list.length){
+        panelList.className = 'empty';
+        panelList.textContent = 'Nenhuma reserva para este dia.';
+        return;
+      }
+
+      panelList.className = '';
+      panelList.innerHTML = list
+        .sort((a,b) => a.inicio.localeCompare(b.inicio))
+        .map(r => `
+          <div class="item">
+            <b>${formatarHora(r.inicio)}-${formatarHora(r.fim)} • ${String(r.equipamento || '').toUpperCase()}</b><br>
+            <small>Status: ${r.status}</small>
+          </div>
+        `).join('');
+    }
+
+    async function carregarReservas(){
+      try{
+        const res = await fetch('/api/agendamentos/meus');
+        if (!res.ok){
+          const text = await res.text();
+          throw new Error(text || 'Falha ao carregar reservas.');
+        }
+
+        const todas = await res.json();
+        reservas = (todas || []).filter(r => r.status === 'ATIVA');
+        rebuildIndex();
+        render();
+        openDay(new Date());
+      }catch(err){
+        panelList.className = 'empty';
+        panelList.textContent = err?.message || 'Erro ao carregar reservas.';
+      }
+    }
+
+    document.getElementById('prev-month').addEventListener('click', () => {
+      view.setMonth(view.getMonth() - 1);
+      render();
+    });
+    document.getElementById('next-month').addEventListener('click', () => {
+      view.setMonth(view.getMonth() + 1);
+      render();
+    });
+    document.getElementById('today-btn').addEventListener('click', () => {
+      view = new Date();
+      render();
+      openDay(new Date());
+    });
+
+    carregarReservas();
+  </script>
+  <script src="/js/portal-transitions.js"></script>
+</body>
+</html>
