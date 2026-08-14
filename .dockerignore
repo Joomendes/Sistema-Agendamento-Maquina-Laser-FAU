@@ -1,0 +1,9 @@
+.git
+.idea/
+.vscode/
+target/
+*.log
+hs_err_pid*.log
+boot.log
+README.md~
+*.iml
