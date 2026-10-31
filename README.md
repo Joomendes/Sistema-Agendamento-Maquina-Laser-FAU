@@ -2,8 +2,10 @@
 
 Aplicação web desenvolvida para a disciplina de Práticas Profissionais em Análise e Desenvolvimento de Sistemas. A aplicação web simula o ambiente de login no portal do aluno TOTVS da Universidade Presbiteriana Mackenzie e inclui a função de agendamentos de máquinas de corte a laser para os alunos da FAU (Faculdade de Arquitetura e Urbanismo).
 
-## Vídeo de demonstração:
+https://sistema-agendamento-maquina-laser-fau.onrender.com/
 
+## Vídeo de demonstração:
+<img width="800" height="393" alt="agendar" src="https://github.com/user-attachments/assets/677a317b-c2a2-4455-a795-bf6a082e9812" />
 
 ## Principais funcionalidades:
 - Autenticação de usuários (papéis: aluno, administrador).
